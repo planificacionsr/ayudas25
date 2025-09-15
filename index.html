@@ -6,8 +6,6 @@
         <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
-        
-        <!-- Hojas de estilo -->
         <link rel="stylesheet" href="./resources/ol.css">
         <link rel="stylesheet" href="resources/fontawesome-all.min.css">
         <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
@@ -16,317 +14,151 @@
         <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
         <link rel="stylesheet" href="./resources/qgis2web.css">
         
-        <!-- Fuentes Google -->
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+        <!-- Fuente moderna -->
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
         
         <style>
         :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --accent: #e74c3c;
-            --light: #ecf0f1;
+            --primary: #3498db;
             --dark: #2c3e50;
-            --success: #27ae60;
-            --warning: #f39c12;
-            --gray-light: #f8f9fa;
-            --gray: #6c757d;
-            --border-radius: 8px;
-            --shadow: 0 4px 12px rgba(0,0,0,0.1);
-            --transition: all 0.3s ease;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            --light: #ecf0f1;
+            --accent: #e74c3c;
+            --gray: #95a5a6;
         }
         
         html, body {
-            background: linear-gradient(135deg, var(--gray-light) 0%, #eef2f7 100%);
-            font-family: 'Roboto', sans-serif;
-            color: var(--dark);
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-        }
-        
-        /* Layout principal */
-        .app-container {
-            display: flex;
-            height: 100vh;
-            width: 100%;
-        }
-        
-        /* Panel lateral */
-        .sidebar {
-            width: 360px;
-            background: linear-gradient(to bottom, var(--primary) 0%, #243342 100%);
-            color: white;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            box-shadow: var(--shadow);
-            z-index: 1000;
-            position: relative;
-        }
-        
-        .sidebar-header {
-            padding: 20px;
-            background: rgba(0,0,0,0.2);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .sidebar-header h1 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.5rem;
+            background-color: #f8f9fa;
+            font-family: 'Inter', sans-serif;
             margin: 0;
-            font-weight: 700;
-            color: white;
-        }
-        
-        .sidebar-header p {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin: 5px 0 0;
-        }
-        
-        .sidebar-content {
-            padding: 20px;
-            overflow-y: auto;
-            flex: 1;
-        }
-        
-        /* Tarjetas de información */
-        .info-card {
-            background: rgba(255,255,255,0.1);
-            border-radius: var(--border-radius);
-            padding: 18px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .info-card h3 {
-            font-family: 'Montserrat', sans-serif;
-            margin: 0 0 15px 0;
-            font-size: 1rem;
-            font-weight: 600;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            padding-bottom: 10px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .info-card h3 i {
-            margin-right: 10px;
-            font-size: 1.1rem;
-        }
-        
-        /* Estadísticas */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        
-        .stat-item {
-            text-align: center;
-            padding: 12px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 6px;
-            transition: var(--transition);
-        }
-        
-        .stat-item:hover {
-            background: rgba(0,0,0,0.3);
-            transform: translateY(-2px);
-        }
-        
-        .stat-value {
-            font-size: 1.4rem;
-            font-weight: 700;
-            display: block;
-            color: white;
-        }
-        
-        .stat-label {
-            font-size: 0.75rem;
-            opacity: 0.8;
-            margin-top: 5px;
-        }
-        
-        /* Leyenda */
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 8px;
-            background: rgba(0,0,0,0.1);
-            border-radius: 6px;
-        }
-        
-        .legend-color {
-            width: 18px;
-            height: 18px;
-            border-radius: 4px;
-            margin-right: 12px;
-            flex-shrink: 0;
-        }
-        
-        .legend-label {
-            font-size: 0.85rem;
-        }
-        
-        /* Filtros */
-        .filter-group {
-            margin-bottom: 18px;
-        }
-        
-        .filter-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        
-        .filter-select, .filter-input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(0,0,0,0.2);
-            color: white;
-            font-family: 'Roboto', sans-serif;
-            transition: var(--transition);
-        }
-        
-        .filter-select:focus, .filter-input:focus {
-            outline: none;
-            border-color: var(--secondary);
-            background: rgba(0,0,0,0.3);
-        }
-        
-        .filter-select option {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .btn-primary {
-            width: 100%;
-            padding: 12px;
-            background: var(--secondary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .btn-primary:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-        }
-        
-        /* Mapa */
-        #map {
-            flex: 1;
+            padding: 0;
             height: 100%;
-            position: relative;
+            width: 100%;
         }
         
-        /* Controles de búsqueda personalizados */
-        .search-container {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
+        /* Header moderno */
+        .header {
+            background: linear-gradient(135deg, var(--dark) 0%, #34495e 100%);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 320px;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        
+        .header p {
+            margin: 5px 0 0;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        /* Contenedor de búsquedas */
+        .search-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
         
         .search-box {
             background: white;
-            border-radius: var(--border-radius);
-            padding: 15px;
-            box-shadow: var(--shadow);
-        }
-        
-        .search-box h4 {
-            font-family: 'Montserrat', sans-serif;
-            margin: 0 0 12px 0;
-            font-size: 1rem;
-            color: var(--dark);
+            border-radius: 8px;
+            padding: 10px 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             display: flex;
             align-items: center;
+            gap: 10px;
         }
         
-        .search-box h4 i {
-            margin-right: 8px;
-            color: var(--secondary);
+        .search-box i {
+            color: var(--primary);
         }
         
         .search-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-family: 'Roboto', sans-serif;
-            transition: var(--transition);
+            border: none;
+            background: transparent;
+            padding: 5px;
+            width: 220px;
+            font-family: 'Inter', sans-serif;
+            color: var(--dark);
         }
         
         .search-input:focus {
             outline: none;
-            border-color: var(--secondary);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
         }
         
-        /* Controles del mapa */
-        .ol-control {
-            background: rgba(255,255,255,0.9) !important;
-            border-radius: var(--border-radius) !important;
-            padding: 8px !important;
-            box-shadow: var(--shadow) !important;
+        .search-input::placeholder {
+            color: var(--gray);
         }
         
-        .ol-control button {
-            background: white !important;
+        /* Mapa */
+        #map {
+            width: 100%;
+            height: calc(100% - 70px);
+        }
+        
+        /* Controles del mapa modernizados */
+        .ol-control > * {
+            background-color: white !important;
             color: var(--dark) !important;
-            border-radius: 4px !important;
-            margin: 4px !important;
-            transition: var(--transition) !important;
+            border-radius: 6px !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
+            transition: all 0.2s ease !important;
         }
         
-        .ol-control button:hover {
-            background: var(--secondary) !important;
+        .ol-control > *:hover {
+            background-color: var(--primary) !important;
             color: white !important;
             transform: scale(1.05);
         }
         
-        /* Popup mejorado */
+        .ol-attribution a, .gcd-gl-input::placeholder, .search-layer-input-search::placeholder {
+            color: var(--dark) !important;
+        }
+        
+        .search-layer-input-search {
+            background-color: white !important;
+            border: 1px solid #e0e0e0 !important;
+            border-radius: 6px !important;
+            padding: 10px 12px !important;
+            font-family: 'Inter', sans-serif !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+        }
+        
+        .ol-control {
+            background-color: rgba(255,255,255,0.8) !important;
+            padding: 8px !important;
+            border-radius: 8px !important;
+        }
+        
+        /* Popup modernizado */
         .ol-popup {
             background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
             padding: 0;
             max-width: 320px;
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
         }
         
         .popup-header {
-            background: var(--primary);
+            background: var(--dark);
             color: white;
             padding: 15px;
-            border-radius: var(--border-radius) var(--border-radius) 0 0;
         }
         
         .popup-header h3 {
             margin: 0;
             font-size: 1.1rem;
-            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
         }
         
         .popup-content {
@@ -338,7 +170,7 @@
             justify-content: space-between;
             margin-bottom: 10px;
             padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #f0f0f0;
         }
         
         .popup-detail-item:last-child {
@@ -358,179 +190,78 @@
         
         .ol-popup-closer {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 12px;
+            right: 12px;
             color: white;
             text-decoration: none;
             font-weight: bold;
             font-size: 1.2rem;
         }
         
-        /* Botón de toggle para móviles */
-        .panel-toggle {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 1001;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            display: none;
-        }
-        
-        .panel-toggle:hover {
-            background: var(--secondary);
-            transform: scale(1.05);
-        }
-        
         /* Responsividad */
-        @media (max-width: 1024px) {
-            .sidebar {
-                width: 300px;
-            }
-            
-            .search-container {
-                width: 280px;
-            }
-        }
-        
         @media (max-width: 768px) {
-            .sidebar {
-                position: absolute;
-                left: -360px;
-                top: 0;
-                bottom: 0;
-                transition: var(--transition);
-                z-index: 1000;
-            }
-            
-            .sidebar.active {
-                left: 0;
-            }
-            
-            .panel-toggle {
-                display: flex;
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 12px;
             }
             
             .search-container {
-                top: 80px;
-                right: 10px;
-                width: calc(100% - 20px);
+                width: 100%;
+                margin-top: 10px;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            #map {
+                height: calc(100% - 130px);
             }
         }
         </style>
-        <title>Visualizador - Ayudas Económicas 2024</title>
+        <title>Visualizador - Ayudas económicas 2024</title>
     </head>
     <body>
-        <button class="panel-toggle" id="panelToggle">
-            <i class="fas fa-bars"></i>
-        </button>
-        
-        <div class="app-container">
-            <div class="sidebar" id="sidebar">
-                <div class="sidebar-header">
-                    <h1><i class="fas fa-hand-holding-heart"></i> Ayudas Económicas</h1>
-                    <p>Visualización de ayudas otorgadas - Ene-Ago 2024</p>
+        <div class="header">
+            <div>
+                <h1>Ayudas Económicas 2024</h1>
+                <p>Visualización de ayudas otorgadas por Desarrollo Social</p>
+            </div>
+            
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="beneficiarySearch" class="search-input" placeholder="Buscar beneficiarios...">
                 </div>
                 
-                <div class="sidebar-content">
-                    <div class="info-card">
-                        <h3><i class="fas fa-chart-bar"></i> Resumen Estadístico</h3>
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <span class="stat-value">460</span>
-                                <span class="stat-label">Total Ayudas</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value">$38.2M</span>
-                                <span class="stat-label">Monto Total</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value">413</span>
-                                <span class="stat-label">Beneficiarios</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value">8</span>
-                                <span class="stat-label">Tipos de Ayuda</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="info-card">
-                        <h3><i class="fas fa-map-marked-alt"></i> Leyenda de Ayudas</h3>
-                        <div id="legend-container">
-                            <!-- La leyenda se generará dinámicamente -->
-                        </div>
-                    </div>
-                    
-                    <div class="info-card">
-                        <h3><i class="fas fa-filter"></i> Filtros</h3>
-                        <div class="filter-group">
-                            <label for="helpTypeFilter">Tipo de Ayuda:</label>
-                            <select id="helpTypeFilter" class="filter-select">
-                                <option value="all">Todos los tipos</option>
-                                <option value="Impuestos">Impuestos</option>
-                                <option value="Gastos médicos">Gastos médicos</option>
-                                <option value="Sepelio">Sepelio</option>
-                                <option value="Canasta básica">Canasta básica</option>
-                                <option value="Alquiler">Alquiler</option>
-                                <option value="Gastos académicos">Gastos académicos</option>
-                                <option value="Compra de (...)">Compra de</option>
-                                <option value="Gastos varios">Gastos varios</option>
-                            </select>
-                        </div>
-                        
-                        <div class="filter-group">
-                            <label for="amountRangeFilter">Monto mínimo:</label>
-                            <input type="range" id="amountRangeFilter" min="0" max="500000" step="10000" value="0" class="filter-input">
-                            <div id="amountValueDisplay" style="font-size: 0.8rem; text-align: center; margin-top: 5px;">Todos los montos</div>
-                        </div>
-                        
-                        <button id="applyFilters" class="btn-primary">
-                            <i class="fas fa-check"></i> Aplicar Filtros
-                        </button>
-                    </div>
+                <div class="search-box">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <input type="text" id="parcelSearch" class="search-input" placeholder="Buscar parcelas...">
                 </div>
             </div>
-            
-            <div id="map">
-                <div id="popup" class="ol-popup">
-                    <a href="#" id="popup-closer" class="ol-popup-closer">&times;</a>
-                    <div class="popup-header">
-                        <h3 id="popup-title">Detalles de Ayuda</h3>
-                    </div>
-                    <div class="popup-content" id="popup-content">
-                        <div class="popup-details" id="popup-details">
-                            <!-- Los detalles se llenarán dinámicamente -->
-                        </div>
+        </div>
+        
+        <div id="map">
+            <div id="popup" class="ol-popup">
+                <a href="#" id="popup-closer" class="ol-popup-closer">&times;</a>
+                <div class="popup-header">
+                    <h3 id="popup-title">Detalles</h3>
+                </div>
+                <div class="popup-content" id="popup-content">
+                    <div class="popup-details" id="popup-details">
+                        <!-- Los detalles se llenarán dinámicamente -->
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Contenedor de búsquedas -->
-        <div class="search-container">
-            <div class="search-box">
-                <h4><i class="fas fa-search"></i> Buscar Beneficiarios</h4>
-                <input type="text" id="beneficiarySearch" class="search-input" placeholder="Buscar por nombre o DNI...">
-            </div>
-            
-            <div class="search-box">
-                <h4><i class="fas fa-map-marked"></i> Buscar Parcelas</h4>
-                <input type="text" id="parcelSearch" class="search-input" placeholder="Buscar por propietario o nomenclatura...">
-            </div>
-        </div>
-
-        <!-- Scripts -->
         <script src="resources/qgis2web_expressions.js"></script>
         <script src="./resources/functions.js"></script>
         <script src="./resources/ol.js"></script>
@@ -549,27 +280,22 @@
         let map;
         let ayudaLayer;
         let parcelaLayer;
-        let originalFeatures = [];
-        let searchLayerBeneficiarios;
-        let searchLayerParcelas;
         
         // Inicializar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(initializeApp, 1000);
             
-            // Configurar el botón de toggle del panel
-            document.getElementById('panelToggle').addEventListener('click', function() {
-                document.getElementById('sidebar').classList.toggle('active');
+            // Configurar búsquedas
+            document.getElementById('beneficiarySearch').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    searchBeneficiarios(this.value);
+                }
             });
             
-            // Configurar el slider de monto
-            const amountSlider = document.getElementById('amountRangeFilter');
-            const amountDisplay = document.getElementById('amountValueDisplay');
-            
-            amountSlider.addEventListener('input', function() {
-                amountDisplay.textContent = this.value == 0 ? 
-                    'Todos los montos' : 
-                    `Mínimo: $${parseInt(this.value).toLocaleString()}`;
+            document.getElementById('parcelSearch').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    searchParcelas(this.value);
+                }
             });
         });
         
@@ -582,91 +308,9 @@
                 const title = layer.get('title') || '';
                 if (title.includes('Ayudas')) {
                     ayudaLayer = layer;
-                    const source = layer.getSource();
-                    source.once('change', () => {
-                        if (source.getState() === 'ready') {
-                            originalFeatures = source.getFeatures();
-                            setupFilters();
-                            setupLegend();
-                        }
-                    });
                 }
                 if (title.includes('Parcelario')) {
                     parcelaLayer = layer;
-                }
-            });
-            
-            // Configurar búsquedas
-            setupSearches();
-        }
-        
-        function setupFilters() {
-            document.getElementById('applyFilters').addEventListener('click', function() {
-                const typeFilter = document.getElementById('helpTypeFilter').value;
-                const amountFilter = parseInt(document.getElementById('amountRangeFilter').value);
-                
-                const source = ayudaLayer.getSource();
-                source.clear();
-                
-                const filteredFeatures = originalFeatures.filter(feature => {
-                    const properties = feature.getProperties();
-                    let matchesType = true;
-                    let matchesAmount = true;
-                    
-                    if (typeFilter !== 'all' && properties.tipo !== typeFilter) {
-                        matchesType = false;
-                    }
-                    
-                    if (amountFilter > 0 && properties.monto && parseInt(properties.monto) < amountFilter) {
-                        matchesAmount = false;
-                    }
-                    
-                    return matchesType && matchesAmount;
-                });
-                
-                source.addFeatures(filteredFeatures);
-            });
-        }
-        
-        function setupLegend() {
-            const helpTypes = [
-                {name: 'Impuestos', color: '#1f78b4'},
-                {name: 'Gastos médicos', color: '#33a02c'},
-                {name: 'Sepelio', color: '#e31a1c'},
-                {name: 'Canasta básica', color: '#ff7f00'},
-                {name: 'Alquiler', color: '#6a3d9a'},
-                {name: 'Gastos académicos', color: '#b15928'},
-                {name: 'Compra de (...)', color: '#a6cee3'},
-                {name: 'Gastos varios', color: '#fb9a99'}
-            ];
-            
-            let legendHTML = '';
-            helpTypes.forEach(type => {
-                legendHTML += `
-                    <div class="legend-item">
-                        <span class="legend-color" style="background-color: ${type.color}"></span>
-                        <span class="legend-label">${type.name}</span>
-                    </div>
-                `;
-            });
-            
-            document.getElementById('legend-container').innerHTML = legendHTML;
-        }
-        
-        function setupSearches() {
-            // Configurar búsqueda de beneficiarios
-            const beneficiarySearch = document.getElementById('beneficiarySearch');
-            beneficiarySearch.addEventListener('keyup', function(e) {
-                if (e.key === 'Enter') {
-                    searchBeneficiarios(this.value);
-                }
-            });
-            
-            // Configurar búsqueda de parcelas
-            const parcelSearch = document.getElementById('parcelSearch');
-            parcelSearch.addEventListener('keyup', function(e) {
-                if (e.key === 'Enter') {
-                    searchParcelas(this.value);
                 }
             });
         }
