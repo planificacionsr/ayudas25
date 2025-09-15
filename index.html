@@ -1,133 +1,407 @@
 <!doctype html>
 <html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-
-    <!-- Librerías qgis2web -->
-    <link rel="stylesheet" href="./resources/ol.css">
-    <link rel="stylesheet" href="resources/fontawesome-all.min.css">
-    <link href="resources/photon-geocoder-autocomplete.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
-    <link rel="stylesheet" href="./resources/qgis2web.css">
-
-    <!-- Estilos personalizados -->
-    <style>
-        html, body, #map {
-            width: 100%;
-            height: 100%;
-            padding: 0;
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="./resources/ol.css">
+        <link rel="stylesheet" href="resources/fontawesome-all.min.css">
+        <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
+        <link rel="stylesheet" type="text/css" href="resources/ol-search-layer.min.css">
+        <link href="resources/photon-geocoder-autocomplete.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
+        <link rel="stylesheet" href="./resources/qgis2web.css">
+        
+        <!-- Fuente adicional para mejor tipografía -->
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+        
+        <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+        }
+        
+        html, body {
+            background-color: #ffffff;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
-            font-family: "Segoe UI", Roboto, Arial, sans-serif;
-            background-color: #f4f6f9;
-            color: #333;
+            padding: 0;
+            height: 100%;
+            width: 100%;
         }
-
-        /* Controles del mapa */
-        .ol-control > * {
-            border-radius: 6px !important;
-            padding: 3px 6px !important;
-            background-color: rgba(255,255,255,0.9) !important;
-            color: #444 !important;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        
+        /* Contenedor principal */
+        .main-container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
         }
-
-        .ol-control > *:focus,
-        .ol-control > *:hover {
-            background-color: rgba(230,230,230,0.9) !important;
-        }
-
-        /* Popup */
-        .ol-popup {
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            min-width: 180px;
-            font-size: 13px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-
-        .ol-popup-closer {
-            color: #444;
-            font-weight: bold;
-        }
-
-        /* Título flotante */
-        #map-title {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255,255,255,0.9);
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 15px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        
+        /* Panel lateral */
+        .sidebar {
+            width: 320px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
             z-index: 1000;
         }
-
-        /* Responsive */
-        @media (max-width: 600px) {
-            #map-title {
-                font-size: 13px;
-                padding: 4px 10px;
+        
+        .sidebar-header {
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 15px;
+        }
+        
+        .sidebar-header h1 {
+            font-size: 1.4rem;
+            margin: 0;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .sidebar-header p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin: 5px 0 0;
+        }
+        
+        .info-panel {
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-panel h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 8px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 8px;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+        
+        /* Mapa */
+        #map {
+            flex: 1;
+            height: 100%;
+            position: relative;
+        }
+        
+        /* Controles del mapa */
+        .ol-control > * {
+            background-color: #f8f8f8!important;
+            color: #444444!important;
+            border-radius: 2px;
+            transition: all 0.2s ease;
+        }
+        
+        .ol-attribution a, .gcd-gl-input::placeholder, .search-layer-input-search::placeholder {
+            color: #444444!important;
+        }
+        
+        .search-layer-input-search {
+            background-color: #f8f8f8!important;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px 12px;
+        }
+        
+        .ol-control > *:focus, .ol-control >*:hover {
+            background-color: rgba(248, 248, 248, 0.9)!important;
+            transform: scale(1.05);
+        } 
+        
+        .ol-control {
+            background-color: rgba(255,255,255,.8) !important;
+            padding: 5px !important;
+            border-radius: 4px;
+        }
+        
+        /* Botón de toggle para panel lateral */
+        .panel-toggle {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 999;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            display: none;
+        }
+        
+        /* Popup mejorado */
+        .ol-popup {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+            padding: 15px;
+            max-width: 300px;
+        }
+        
+        .ol-popup-closer {
+            text-decoration: none;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            color: #777;
+            font-weight: bold;
+        }
+        
+        .ol-popup-closer:hover {
+            color: #000;
+        }
+        
+        .popup-content h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+        
+        .popup-details {
+            margin-top: 10px;
+        }
+        
+        .popup-detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .popup-detail-item .label {
+            font-weight: 500;
+            color: #555;
+        }
+        
+        /* Responsividad */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                left: -320px;
+                top: 0;
+                bottom: 0;
+                transition: left 0.3s ease;
+                z-index: 1000;
+            }
+            
+            .sidebar.active {
+                left: 0;
+            }
+            
+            .panel-toggle {
+                display: block;
             }
         }
-    </style>
-
-    <title>Visor Censo Santa Rosa 2025</title>
-</head>
-<body>
-    <div id="map">
-        <div id="map-title">Ayudas económicas Ene–Ago 2025</div>
-        <div id="popup" class="ol-popup">
-            <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-            <div id="popup-content"></div>
+        </style>
+        <title>Visualizador - Ayudas económicas otorgadas Ene-Ago 2024</title>
+    </head>
+    <body>
+        <button class="panel-toggle" id="panelToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <div class="main-container">
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h1>Ayudas Económicas 2024</h1>
+                    <p>Visualización de ayudas otorgadas por Desarrollo Social</p>
+                </div>
+                
+                <div class="info-panel">
+                    <h3>Resumen Estadístico</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-value">460</span>
+                            <span class="stat-label">Total Ayudas</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">$38.2M</span>
+                            <span class="stat-label">Monto Total</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">413</span>
+                            <span class="stat-label">Beneficiarios</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">8</span>
+                            <span class="stat-label">Tipos de Ayuda</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-panel">
+                    <h3>Leyenda de Ayudas</h3>
+                    <div id="legend-container">
+                        <!-- La leyenda se generará dinámicamente con JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="info-panel">
+                    <h3>Filtros</h3>
+                    <div class="filter-group">
+                        <label for="helpTypeFilter">Tipo de Ayuda:</label>
+                        <select id="helpTypeFilter" class="filter-select">
+                            <option value="all">Todos los tipos</option>
+                            <option value="Impuestos">Impuestos</option>
+                            <option value="Gastos médicos">Gastos médicos</option>
+                            <option value="Sepelio">Sepelio</option>
+                            <option value="Canasta básica">Canasta básica</option>
+                            <option value="Alquiler">Alquiler</option>
+                            <option value="Gastos académicos">Gastos académicos</option>
+                            <option value="Compra de (...)">Compra de</option>
+                            <option value="Gastos varios">Gastos varios</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group" style="margin-top: 10px;">
+                        <label for="amountRangeFilter">Monto:</label>
+                        <input type="range" id="amountRangeFilter" min="0" max="500000" step="10000" class="filter-slider">
+                        <div id="amountValueDisplay">Todos los montos</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="map">
+                <div id="popup" class="ol-popup">
+                    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                    <div id="popup-content">
+                        <h3 id="popup-title">Detalles de Ayuda</h3>
+                        <div class="popup-details" id="popup-details">
+                            <!-- Los detalles se llenarán dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- Scripts de qgis2web -->
-    <script src="resources/qgis2web_expressions.js"></script>
-    <script src="./resources/functions.js"></script>
-    <script src="./resources/ol.js"></script>
-    <script src="./resources/ol-layerswitcher.js"></script>
-    <script src="resources/photon-geocoder-autocomplete.min.js"></script>
-
-    <!-- Capas -->
-    <script src="layers/Limites_1.js"></script>
-    <script src="layers/Barrios_2.js"></script>
-    <script src="layers/Espaciosverdes_3.js"></script>
-    <script src="layers/Redvial_4.js"></script>
-    <script src="layers/Parcelarioconpropietarios_5.js"></script>
-    <script src="layers/Ayudasporlocalidad_6.js"></script>
-    <script src="layers/EmpleadosMunicipales_7.js"></script>
-    <script src="layers/Cantidaddeayudasporpersona_8.js"></script>
-    <script src="layers/Ayudasportipo_9.js"></script>
-    <script src="layers/Ayudaspormonto_10.js"></script>
-    <script src="layers/Montoporlocalidad_11.js"></script>
-    <script src="layers/Localidades_12.js"></script>
-
-    <!-- Estilos -->
-    <script src="styles/Limites_1_style.js"></script>
-    <script src="styles/Barrios_2_style.js"></script>
-    <script src="styles/Espaciosverdes_3_style.js"></script>
-    <script src="styles/Redvial_4_style.js"></script>
-    <script src="styles/Parcelarioconpropietarios_5_style.js"></script>
-    <script src="styles/Ayudasporlocalidad_6_style.js"></script>
-    <script src="styles/EmpleadosMunicipales_7_style.js"></script>
-    <script src="styles/Cantidaddeayudasporpersona_8_style.js"></script>
-    <script src="styles/Ayudasportipo_9_style.js"></script>
-    <script src="styles/Ayudaspormonto_10_style.js"></script>
-    <script src="styles/Montoporlocalidad_11_style.js"></script>
-    <script src="styles/Localidades_12_style.js"></script>
-
-    <script src="./layers/layers.js" type="text/javascript"></script> 
-    <script src="./resources/Autolinker.min.js"></script>
-    <script src="./resources/qgis2web.js"></script>
-</body>
+        <script src="resources/qgis2web_expressions.js"></script>
+        <script src="./resources/functions.js"></script>
+        <script src="./resources/ol.js"></script>
+        <script src="resources/horsey.min.js"></script>
+        <script src="resources/ol-search-layer.js"></script>
+        <script src="./resources/ol-layerswitcher.js"></script>
+        <script src="resources/photon-geocoder-autocomplete.min.js"></script>
+        <script src="layers/Limites_1.js"></script><script src="layers/Barrios_2.js"></script><script src="layers/Espaciosverdes_3.js"></script><script src="layers/Redvial_4.js"></script><script src="layers/Parcelarioconpropietarios_5.js"></script><script src="layers/Ayudasporlocalidad_6.js"></script><script src="layers/EmpleadosMunicipales_7.js"></script><script src="layers/Cantidaddeayudasporpersona_8.js"></script><script src="layers/Ayudasportipo_9.js"></script><script src="layers/Ayudaspormonto_10.js"></script><script src="layers/Montoporlocalidad_11.js"></script><script src="layers/Localidades_12.js"></script>
+        <script src="styles/Limites_1_style.js"></script><script src="styles/Barrios_2_style.js"></script><script src="styles/Espaciosverdes_3_style.js"></script><script src="styles/Redvial_4_style.js"></script><script src="styles/Parcelarioconpropietarios_5_style.js"></script><script src="styles/Ayudasporlocalidad_6_style.js"></script><script src="styles/EmpleadosMunicipales_7_style.js"></script><script src="styles/Cantidaddeayudasporpersona_8_style.js"></script><script src="styles/Ayudasportipo_9_style.js"></script><script src="styles/Ayudaspormonto_10_style.js"></script><script src="styles/Montoporlocalidad_11_style.js"></script><script src="styles/Localidades_12_style.js"></script>
+        <script src="./layers/layers.js" type="text/javascript"></script> 
+        <script src="./resources/Autolinker.min.js"></script>
+        <script src="./resources/qgis2web.js"></script>
+        
+        <script>
+        // Funcionalidad para el panel lateral en dispositivos móviles
+        document.getElementById('panelToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+        
+        // Código para mejorar la búsqueda y centrado en puntos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Esperar a que el mapa se cargue completamente
+            setTimeout(function() {
+                // Mejorar la función de búsqueda para centrar en el punto
+                if (typeof searchLayer !== 'undefined') {
+                    // Sobrescribir el comportamiento por defecto para centrar y hacer zoom
+                    var originalSearchFunction = searchLayer.search;
+                    
+                    searchLayer.search = function(query) {
+                        originalSearchFunction.call(this, query);
+                        
+                        // Centrar en el primer resultado
+                        if (this.features.length > 0) {
+                            var feature = this.features[0];
+                            var geometry = feature.getGeometry();
+                            
+                            if (geometry) {
+                                var view = map.getView();
+                                view.animate({
+                                    center: geometry.getCoordinates(),
+                                    zoom: 16,
+                                    duration: 1000
+                                });
+                                
+                                // Abrir popup con información
+                                var overlay = document.getElementById('popup');
+                                var content = document.getElementById('popup-content');
+                                
+                                // Construir contenido del popup
+                                var props = feature.getProperties();
+                                var popupHTML = '<h3>Detalles de Ayuda</h3><div class="popup-details">';
+                                
+                                for (var key in props) {
+                                    if (props.hasOwnProperty(key) && key !== 'geometry') {
+                                        popupHTML += '<div class="popup-detail-item"><span class="label">' + key + ':</span> <span>' + props[key] + '</span></div>';
+                                    }
+                                }
+                                
+                                popupHTML += '</div>';
+                                content.innerHTML = popupHTML;
+                                
+                                // Mostrar popup
+                                overlay.style.display = 'block';
+                            }
+                        }
+                    };
+                }
+                
+                // Generar leyenda dinámicamente
+                var legendContainer = document.getElementById('legend-container');
+                var helpTypes = [
+                    {name: 'Impuestos', color: '#1f77b4', icon: 'receipt'},
+                    {name: 'Gastos médicos', color: '#ff7f0e', icon: 'first-aid'},
+                    {name: 'Sepelio', color: '#2ca02c', icon: 'monument'},
+                    {name: 'Canasta básica', color: '#d62728', icon: 'shopping-basket'},
+                    {name: 'Alquiler', color: '#9467bd', icon: 'home'},
+                    {name: 'Gastos académicos', color: '#8c564b', icon: 'graduation-cap'},
+                    {name: 'Compra de (...)', color: '#e377c2', icon: 'shopping-cart'},
+                    {name: 'Gastos varios', color: '#7f7f7f', icon: 'coins'}
+                ];
+                
+                var legendHTML = '';
+                helpTypes.forEach(function(type) {
+                    legendHTML += '<div class="legend-item" style="margin-bottom: 8px; display: flex; align-items: center;">';
+                    legendHTML += '<span class="legend-color" style="display: inline-block; width: 16px; height: 16px; background-color: ' + type.color + '; margin-right: 8px; border-radius: 3px;"></span>';
+                    legendHTML += '<span class="legend-label" style="font-size: 0.85rem;">' + type.name + '</span>';
+                    legendHTML += '</div>';
+                });
+                
+                legendContainer.innerHTML = legendHTML;
+                
+            }, 1000);
+        });
+        </script>
+    </body>
 </html>
