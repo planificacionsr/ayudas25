@@ -111,6 +111,49 @@
             opacity: 0.8;
         }
         
+        /* Estilos para filtros */
+        .filter-group {
+            margin-bottom: 15px;
+        }
+        
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .filter-select, .filter-slider {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background-color: rgba(0,0,0,0.2);
+            color: white;
+        }
+        
+        .filter-slider {
+            -webkit-appearance: none;
+            height: 5px;
+            background: rgba(255,255,255,0.3);
+            outline: none;
+        }
+        
+        .filter-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            cursor: pointer;
+        }
+        
+        #amountValueDisplay {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
         /* Mapa */
         #map {
             flex: 1;
@@ -289,10 +332,12 @@
                     </div>
                     
                     <div class="filter-group" style="margin-top: 10px;">
-                        <label for="amountRangeFilter">Monto:</label>
-                        <input type="range" id="amountRangeFilter" min="0" max="500000" step="10000" class="filter-slider">
+                        <label for="amountRangeFilter">Monto mínimo:</label>
+                        <input type="range" id="amountRangeFilter" min="0" max="500000" step="10000" value="0" class="filter-slider">
                         <div id="amountValueDisplay">Todos los montos</div>
                     </div>
+                    
+                    <button id="applyFilters" style="width: 100%; padding: 8px; background-color: var(--secondary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Aplicar Filtros</button>
                 </div>
             </div>
             
@@ -323,85 +368,161 @@
         <script src="./resources/qgis2web.js"></script>
         
         <script>
-        // Funcionalidad para el panel lateral en dispositivos móviles
-        document.getElementById('panelToggle').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('active');
+        // Variables globales
+        var map;
+        var ayudaLayer;
+        var originalFeatures = [];
+        
+        // Esperar a que el mapa esté completamente cargado
+        document.addEventListener('DOMContentLoaded', function() {
+            // Esperar a que qgis2web termine de inicializar el mapa
+            setTimeout(initializeCustomFeatures, 1000);
         });
         
-        // Código para mejorar la búsqueda y centrado en puntos
-        document.addEventListener('DOMContentLoaded', function() {
-            // Esperar a que el mapa se cargue completamente
-            setTimeout(function() {
-                // Mejorar la función de búsqueda para centrar en el punto
-                if (typeof searchLayer !== 'undefined') {
-                    // Sobrescribir el comportamiento por defecto para centrar y hacer zoom
-                    var originalSearchFunction = searchLayer.search;
-                    
-                    searchLayer.search = function(query) {
-                        originalSearchFunction.call(this, query);
-                        
-                        // Centrar en el primer resultado
-                        if (this.features.length > 0) {
-                            var feature = this.features[0];
-                            var geometry = feature.getGeometry();
-                            
-                            if (geometry) {
-                                var view = map.getView();
-                                view.animate({
-                                    center: geometry.getCoordinates(),
-                                    zoom: 16,
-                                    duration: 1000
-                                });
-                                
-                                // Abrir popup con información
-                                var overlay = document.getElementById('popup');
-                                var content = document.getElementById('popup-content');
-                                
-                                // Construir contenido del popup
-                                var props = feature.getProperties();
-                                var popupHTML = '<h3>Detalles de Ayuda</h3><div class="popup-details">';
-                                
-                                for (var key in props) {
-                                    if (props.hasOwnProperty(key) && key !== 'geometry') {
-                                        popupHTML += '<div class="popup-detail-item"><span class="label">' + key + ':</span> <span>' + props[key] + '</span></div>';
-                                    }
-                                }
-                                
-                                popupHTML += '</div>';
-                                content.innerHTML = popupHTML;
-                                
-                                // Mostrar popup
-                                overlay.style.display = 'block';
-                            }
-                        }
-                    };
+        function initializeCustomFeatures() {
+            // Obtener referencia al mapa y a la capa de ayudas
+            map = window.map;
+            
+            // Buscar la capa de ayudas (ajusta el nombre según tu configuración)
+            var layers = map.getLayers().getArray();
+            for (var i = 0; i < layers.length; i++) {
+                if (layers[i].get('title') && layers[i].get('title').includes('Ayudas')) {
+                    ayudaLayer = layers[i];
+                    break;
                 }
+            }
+            
+            // Guardar todas las features originales para filtrado
+            if (ayudaLayer) {
+                var source = ayudaLayer.getSource();
+                source.once('change', function() {
+                    if (source.getState() === 'ready') {
+                        originalFeatures = source.getFeatures();
+                        setupFilters();
+                        setupLegend();
+                        setupSearch();
+                    }
+                });
+            }
+            
+            // Configurar el botón de toggle del panel
+            document.getElementById('panelToggle').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('active');
+            });
+            
+            // Configurar el slider de monto
+            var amountSlider = document.getElementById('amountRangeFilter');
+            var amountDisplay = document.getElementById('amountValueDisplay');
+            
+            amountSlider.addEventListener('input', function() {
+                if (this.value == 0) {
+                    amountDisplay.textContent = 'Todos los montos';
+                } else {
+                    amountDisplay.textContent = 'Mínimo: $' + parseInt(this.value).toLocaleString();
+                }
+            });
+        }
+        
+        function setupFilters() {
+            document.getElementById('applyFilters').addEventListener('click', function() {
+                var typeFilter = document.getElementById('helpTypeFilter').value;
+                var amountFilter = parseInt(document.getElementById('amountRangeFilter').value);
                 
-                // Generar leyenda dinámicamente
-                var legendContainer = document.getElementById('legend-container');
-                var helpTypes = [
-                    {name: 'Impuestos', color: '#1f77b4', icon: 'receipt'},
-                    {name: 'Gastos médicos', color: '#ff7f0e', icon: 'first-aid'},
-                    {name: 'Sepelio', color: '#2ca02c', icon: 'monument'},
-                    {name: 'Canasta básica', color: '#d62728', icon: 'shopping-basket'},
-                    {name: 'Alquiler', color: '#9467bd', icon: 'home'},
-                    {name: 'Gastos académicos', color: '#8c564b', icon: 'graduation-cap'},
-                    {name: 'Compra de (...)', color: '#e377c2', icon: 'shopping-cart'},
-                    {name: 'Gastos varios', color: '#7f7f7f', icon: 'coins'}
-                ];
+                var source = ayudaLayer.getSource();
+                source.clear();
                 
-                var legendHTML = '';
-                helpTypes.forEach(function(type) {
-                    legendHTML += '<div class="legend-item" style="margin-bottom: 8px; display: flex; align-items: center;">';
-                    legendHTML += '<span class="legend-color" style="display: inline-block; width: 16px; height: 16px; background-color: ' + type.color + '; margin-right: 8px; border-radius: 3px;"></span>';
-                    legendHTML += '<span class="legend-label" style="font-size: 0.85rem;">' + type.name + '</span>';
-                    legendHTML += '</div>';
+                var filteredFeatures = originalFeatures.filter(function(feature) {
+                    var properties = feature.getProperties();
+                    var matchesType = true;
+                    var matchesAmount = true;
+                    
+                    // Filtrar por tipo
+                    if (typeFilter !== 'all' && properties.tipo !== typeFilter) {
+                        matchesType = false;
+                    }
+                    
+                    // Filtrar por monto (asumiendo que hay una propiedad 'monto')
+                    if (amountFilter > 0 && properties.monto && parseInt(properties.monto) < amountFilter) {
+                        matchesAmount = false;
+                    }
+                    
+                    return matchesType && matchesAmount;
                 });
                 
-                legendContainer.innerHTML = legendHTML;
+                source.addFeatures(filteredFeatures);
+            });
+        }
+        
+        function setupLegend() {
+            // Colores basados en los estilos de QGIS (debes ajustarlos según tu configuración)
+            var helpTypes = [
+                {name: 'Impuestos', color: '#1f78b4'},
+                {name: 'Gastos médicos', color: '#33a02c'},
+                {name: 'Sepelio', color: '#e31a1c'},
+                {name: 'Canasta básica', color: '#ff7f00'},
+                {name: 'Alquiler', color: '#6a3d9a'},
+                {name: 'Gastos académicos', color: '#b15928'},
+                {name: 'Compra de (...)', color: '#a6cee3'},
+                {name: 'Gastos varios', color: '#fb9a99'}
+            ];
+            
+            var legendHTML = '';
+            helpTypes.forEach(function(type) {
+                legendHTML += '<div class="legend-item" style="margin-bottom: 8px; display: flex; align-items: center;">';
+                legendHTML += '<span class="legend-color" style="display: inline-block; width: 16px; height: 16px; background-color: ' + type.color + '; margin-right: 8px; border-radius: 3px;"></span>';
+                legendHTML += '<span class="legend-label" style="font-size: 0.85rem;">' + type.name + '</span>';
+                legendHTML += '</div>';
+            });
+            
+            document.getElementById('legend-container').innerHTML = legendHTML;
+        }
+        
+        function setupSearch() {
+            // Mejorar la función de búsqueda para centrar en el punto
+            if (typeof searchLayer !== 'undefined') {
+                // Sobrescribir el comportamiento por defecto para centrar y hacer zoom
+                var originalSearchFunction = searchLayer.search;
                 
-            }, 1000);
-        });
+                searchLayer.search = function(query) {
+                    originalSearchFunction.call(this, query);
+                    
+                    // Centrar en el primer resultado
+                    if (this.features.length > 0) {
+                        var feature = this.features[0];
+                        var geometry = feature.getGeometry();
+                        
+                        if (geometry) {
+                            var view = map.getView();
+                            view.animate({
+                                center: geometry.getCoordinates(),
+                                zoom: 16,
+                                duration: 1000
+                            });
+                            
+                            // Abrir popup con información
+                            var overlay = document.getElementById('popup');
+                            var content = document.getElementById('popup-content');
+                            
+                            // Construir contenido del popup
+                            var props = feature.getProperties();
+                            var popupHTML = '<h3>Detalles de Ayuda</h3><div class="popup-details">';
+                            
+                            for (var key in props) {
+                                if (props.hasOwnProperty(key) && key !== 'geometry') {
+                                    popupHTML += '<div class="popup-detail-item"><span class="label">' + key + ':</span> <span>' + props[key] + '</span></div>';
+                                }
+                            }
+                            
+                            popupHTML += '</div>';
+                            content.innerHTML = popupHTML;
+                            
+                            // Mostrar popup
+                            overlay.style.display = 'block';
+                        }
+                    }
+                };
+            }
+        }
         </script>
     </body>
 </html>
