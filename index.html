@@ -6,6 +6,8 @@
         <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
+        
+        <!-- Hojas de estilo -->
         <link rel="stylesheet" href="./resources/ol.css">
         <link rel="stylesheet" href="resources/fontawesome-all.min.css">
         <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
@@ -14,29 +16,42 @@
         <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
         <link rel="stylesheet" href="./resources/qgis2web.css">
         
-        <!-- Fuente adicional para mejor tipografía -->
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+        <!-- Fuentes Google -->
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
         
         <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --light-color: #ecf0f1;
-            --dark-color: #34495e;
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --gray-light: #f8f9fa;
+            --gray: #6c757d;
+            --border-radius: 8px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
         
         html, body {
-            background-color: #ffffff;
+            background: linear-gradient(135deg, var(--gray-light) 0%, #eef2f7 100%);
             font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
+            color: var(--dark);
             height: 100%;
             width: 100%;
+            overflow: hidden;
         }
         
-        /* Contenedor principal */
-        .main-container {
+        /* Layout principal */
+        .app-container {
             display: flex;
             height: 100vh;
             width: 100%;
@@ -44,26 +59,29 @@
         
         /* Panel lateral */
         .sidebar {
-            width: 320px;
-            background-color: var(--primary-color);
+            width: 360px;
+            background: linear-gradient(to bottom, var(--primary) 0%, #243342 100%);
             color: white;
-            padding: 20px;
-            overflow-y: auto;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
             z-index: 1000;
+            position: relative;
         }
         
         .sidebar-header {
-            margin-bottom: 25px;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            padding-bottom: 15px;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
         .sidebar-header h1 {
-            font-size: 1.4rem;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
             margin: 0;
+            font-weight: 700;
             color: white;
-            font-weight: 500;
         }
         
         .sidebar-header p {
@@ -72,86 +90,143 @@
             margin: 5px 0 0;
         }
         
-        .info-panel {
-            background-color: rgba(255,255,255,0.1);
-            border-radius: 5px;
-            padding: 15px;
+        .sidebar-content {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        /* Tarjetas de información */
+        .info-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: var(--border-radius);
+            padding: 18px;
             margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
         }
         
-        .info-panel h3 {
-            margin-top: 0;
+        .info-card h3 {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0 0 15px 0;
             font-size: 1rem;
+            font-weight: 600;
             border-bottom: 1px solid rgba(255,255,255,0.2);
-            padding-bottom: 8px;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
         }
         
+        .info-card h3 i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        
+        /* Estadísticas */
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 12px;
         }
         
         .stat-item {
             text-align: center;
-            padding: 8px;
-            background-color: rgba(255,255,255,0.1);
-            border-radius: 4px;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+        
+        .stat-item:hover {
+            background: rgba(0,0,0,0.3);
+            transform: translateY(-2px);
         }
         
         .stat-value {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             font-weight: 700;
             display: block;
+            color: white;
         }
         
         .stat-label {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             opacity: 0.8;
+            margin-top: 5px;
         }
         
-        /* Estilos para filtros */
+        /* Leyenda */
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 6px;
+        }
+        
+        .legend-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .legend-label {
+            font-size: 0.85rem;
+        }
+        
+        /* Filtros */
         .filter-group {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
         
         .filter-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-size: 0.9rem;
+            font-weight: 500;
         }
         
-        .filter-select, .filter-slider {
+        .filter-select, .filter-input {
             width: 100%;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid rgba(255,255,255,0.3);
-            background-color: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.2);
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            transition: var(--transition);
+        }
+        
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: rgba(0,0,0,0.3);
+        }
+        
+        .filter-select option {
+            background: var(--primary);
             color: white;
         }
         
-        .filter-slider {
-            -webkit-appearance: none;
-            height: 5px;
-            background: rgba(255,255,255,0.3);
-            outline: none;
-        }
-        
-        .filter-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            background: var(--secondary-color);
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
             cursor: pointer;
+            transition: var(--transition);
         }
         
-        #amountValueDisplay {
-            font-size: 0.8rem;
-            margin-top: 5px;
-            text-align: center;
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
         }
         
         /* Mapa */
@@ -161,104 +236,180 @@
             position: relative;
         }
         
-        /* Controles del mapa */
-        .ol-control > * {
-            background-color: #f8f8f8!important;
-            color: #444444!important;
-            border-radius: 2px;
-            transition: all 0.2s ease;
-        }
-        
-        .ol-attribution a, .gcd-gl-input::placeholder, .search-layer-input-search::placeholder {
-            color: #444444!important;
-        }
-        
-        .search-layer-input-search {
-            background-color: #f8f8f8!important;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 8px 12px;
-        }
-        
-        .ol-control > *:focus, .ol-control >*:hover {
-            background-color: rgba(248, 248, 248, 0.9)!important;
-            transform: scale(1.05);
-        } 
-        
-        .ol-control {
-            background-color: rgba(255,255,255,.8) !important;
-            padding: 5px !important;
-            border-radius: 4px;
-        }
-        
-        /* Botón de toggle para panel lateral */
-        .panel-toggle {
+        /* Controles de búsqueda personalizados */
+        .search-container {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 999;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 8px 12px;
-            cursor: pointer;
-            display: none;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 320px;
+        }
+        
+        .search-box {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--shadow);
+        }
+        
+        .search-box h4 {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0 0 12px 0;
+            font-size: 1rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-box h4 i {
+            margin-right: 8px;
+            color: var(--secondary);
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Roboto', sans-serif;
+            transition: var(--transition);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        /* Controles del mapa */
+        .ol-control {
+            background: rgba(255,255,255,0.9) !important;
+            border-radius: var(--border-radius) !important;
+            padding: 8px !important;
+            box-shadow: var(--shadow) !important;
+        }
+        
+        .ol-control button {
+            background: white !important;
+            color: var(--dark) !important;
+            border-radius: 4px !important;
+            margin: 4px !important;
+            transition: var(--transition) !important;
+        }
+        
+        .ol-control button:hover {
+            background: var(--secondary) !important;
+            color: white !important;
+            transform: scale(1.05);
         }
         
         /* Popup mejorado */
         .ol-popup {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 0;
+            max-width: 320px;
+            font-family: 'Roboto', sans-serif;
+        }
+        
+        .popup-header {
+            background: var(--primary);
+            color: white;
             padding: 15px;
-            max-width: 300px;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
         }
         
-        .ol-popup-closer {
-            text-decoration: none;
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            color: #777;
-            font-weight: bold;
+        .popup-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-family: 'Montserrat', sans-serif;
         }
         
-        .ol-popup-closer:hover {
-            color: #000;
-        }
-        
-        .popup-content h3 {
-            margin-top: 0;
-            color: var(--primary-color);
-            border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
-        }
-        
-        .popup-details {
-            margin-top: 10px;
+        .popup-content {
+            padding: 15px;
         }
         
         .popup-detail-item {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .popup-detail-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
         }
         
         .popup-detail-item .label {
             font-weight: 500;
-            color: #555;
+            color: var(--dark);
+        }
+        
+        .popup-detail-item .value {
+            color: var(--gray);
+        }
+        
+        .ol-popup-closer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        /* Botón de toggle para móviles */
+        .panel-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            display: none;
+        }
+        
+        .panel-toggle:hover {
+            background: var(--secondary);
+            transform: scale(1.05);
         }
         
         /* Responsividad */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 300px;
+            }
+            
+            .search-container {
+                width: 280px;
+            }
+        }
+        
         @media (max-width: 768px) {
             .sidebar {
                 position: absolute;
-                left: -320px;
+                left: -360px;
                 top: 0;
                 bottom: 0;
-                transition: left 0.3s ease;
+                transition: var(--transition);
                 z-index: 1000;
             }
             
@@ -267,85 +418,97 @@
             }
             
             .panel-toggle {
-                display: block;
+                display: flex;
+            }
+            
+            .search-container {
+                top: 80px;
+                right: 10px;
+                width: calc(100% - 20px);
             }
         }
         </style>
-        <title>Visualizador - Ayudas económicas otorgadas Ene-Ago 2024</title>
+        <title>Visualizador - Ayudas Económicas 2024</title>
     </head>
     <body>
         <button class="panel-toggle" id="panelToggle">
             <i class="fas fa-bars"></i>
         </button>
         
-        <div class="main-container">
+        <div class="app-container">
             <div class="sidebar" id="sidebar">
                 <div class="sidebar-header">
-                    <h1>Ayudas Económicas 2024</h1>
-                    <p>Visualización de ayudas otorgadas por Desarrollo Social</p>
+                    <h1><i class="fas fa-hand-holding-heart"></i> Ayudas Económicas</h1>
+                    <p>Visualización de ayudas otorgadas - Ene-Ago 2024</p>
                 </div>
                 
-                <div class="info-panel">
-                    <h3>Resumen Estadístico</h3>
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <span class="stat-value">460</span>
-                            <span class="stat-label">Total Ayudas</span>
+                <div class="sidebar-content">
+                    <div class="info-card">
+                        <h3><i class="fas fa-chart-bar"></i> Resumen Estadístico</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-value">460</span>
+                                <span class="stat-label">Total Ayudas</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">$38.2M</span>
+                                <span class="stat-label">Monto Total</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">413</span>
+                                <span class="stat-label">Beneficiarios</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">8</span>
+                                <span class="stat-label">Tipos de Ayuda</span>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-value">$38.2M</span>
-                            <span class="stat-label">Monto Total</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value">413</span>
-                            <span class="stat-label">Beneficiarios</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value">8</span>
-                            <span class="stat-label">Tipos de Ayuda</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="info-panel">
-                    <h3>Leyenda de Ayudas</h3>
-                    <div id="legend-container">
-                        <!-- La leyenda se generará dinámicamente con JavaScript -->
-                    </div>
-                </div>
-                
-                <div class="info-panel">
-                    <h3>Filtros</h3>
-                    <div class="filter-group">
-                        <label for="helpTypeFilter">Tipo de Ayuda:</label>
-                        <select id="helpTypeFilter" class="filter-select">
-                            <option value="all">Todos los tipos</option>
-                            <option value="Impuestos">Impuestos</option>
-                            <option value="Gastos médicos">Gastos médicos</option>
-                            <option value="Sepelio">Sepelio</option>
-                            <option value="Canasta básica">Canasta básica</option>
-                            <option value="Alquiler">Alquiler</option>
-                            <option value="Gastos académicos">Gastos académicos</option>
-                            <option value="Compra de (...)">Compra de</option>
-                            <option value="Gastos varios">Gastos varios</option>
-                        </select>
                     </div>
                     
-                    <div class="filter-group" style="margin-top: 10px;">
-                        <label for="amountRangeFilter">Monto mínimo:</label>
-                        <input type="range" id="amountRangeFilter" min="0" max="500000" step="10000" value="0" class="filter-slider">
-                        <div id="amountValueDisplay">Todos los montos</div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-map-marked-alt"></i> Leyenda de Ayudas</h3>
+                        <div id="legend-container">
+                            <!-- La leyenda se generará dinámicamente -->
+                        </div>
                     </div>
                     
-                    <button id="applyFilters" style="width: 100%; padding: 8px; background-color: var(--secondary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Aplicar Filtros</button>
+                    <div class="info-card">
+                        <h3><i class="fas fa-filter"></i> Filtros</h3>
+                        <div class="filter-group">
+                            <label for="helpTypeFilter">Tipo de Ayuda:</label>
+                            <select id="helpTypeFilter" class="filter-select">
+                                <option value="all">Todos los tipos</option>
+                                <option value="Impuestos">Impuestos</option>
+                                <option value="Gastos médicos">Gastos médicos</option>
+                                <option value="Sepelio">Sepelio</option>
+                                <option value="Canasta básica">Canasta básica</option>
+                                <option value="Alquiler">Alquiler</option>
+                                <option value="Gastos académicos">Gastos académicos</option>
+                                <option value="Compra de (...)">Compra de</option>
+                                <option value="Gastos varios">Gastos varios</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="amountRangeFilter">Monto mínimo:</label>
+                            <input type="range" id="amountRangeFilter" min="0" max="500000" step="10000" value="0" class="filter-input">
+                            <div id="amountValueDisplay" style="font-size: 0.8rem; text-align: center; margin-top: 5px;">Todos los montos</div>
+                        </div>
+                        
+                        <button id="applyFilters" class="btn-primary">
+                            <i class="fas fa-check"></i> Aplicar Filtros
+                        </button>
+                    </div>
                 </div>
             </div>
             
             <div id="map">
                 <div id="popup" class="ol-popup">
-                    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-                    <div id="popup-content">
+                    <a href="#" id="popup-closer" class="ol-popup-closer">&times;</a>
+                    <div class="popup-header">
                         <h3 id="popup-title">Detalles de Ayuda</h3>
+                    </div>
+                    <div class="popup-content" id="popup-content">
                         <div class="popup-details" id="popup-details">
                             <!-- Los detalles se llenarán dinámicamente -->
                         </div>
@@ -354,6 +517,20 @@
             </div>
         </div>
 
+        <!-- Contenedor de búsquedas -->
+        <div class="search-container">
+            <div class="search-box">
+                <h4><i class="fas fa-search"></i> Buscar Beneficiarios</h4>
+                <input type="text" id="beneficiarySearch" class="search-input" placeholder="Buscar por nombre o DNI...">
+            </div>
+            
+            <div class="search-box">
+                <h4><i class="fas fa-map-marked"></i> Buscar Parcelas</h4>
+                <input type="text" id="parcelSearch" class="search-input" placeholder="Buscar por propietario o nomenclatura...">
+            </div>
+        </div>
+
+        <!-- Scripts -->
         <script src="resources/qgis2web_expressions.js"></script>
         <script src="./resources/functions.js"></script>
         <script src="./resources/ol.js"></script>
@@ -369,41 +546,16 @@
         
         <script>
         // Variables globales
-        var map;
-        var ayudaLayer;
-        var originalFeatures = [];
+        let map;
+        let ayudaLayer;
+        let parcelaLayer;
+        let originalFeatures = [];
+        let searchLayerBeneficiarios;
+        let searchLayerParcelas;
         
-        // Esperar a que el mapa esté completamente cargado
+        // Inicializar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', function() {
-            // Esperar a que qgis2web termine de inicializar el mapa
-            setTimeout(initializeCustomFeatures, 1000);
-        });
-        
-        function initializeCustomFeatures() {
-            // Obtener referencia al mapa y a la capa de ayudas
-            map = window.map;
-            
-            // Buscar la capa de ayudas (ajusta el nombre según tu configuración)
-            var layers = map.getLayers().getArray();
-            for (var i = 0; i < layers.length; i++) {
-                if (layers[i].get('title') && layers[i].get('title').includes('Ayudas')) {
-                    ayudaLayer = layers[i];
-                    break;
-                }
-            }
-            
-            // Guardar todas las features originales para filtrado
-            if (ayudaLayer) {
-                var source = ayudaLayer.getSource();
-                source.once('change', function() {
-                    if (source.getState() === 'ready') {
-                        originalFeatures = source.getFeatures();
-                        setupFilters();
-                        setupLegend();
-                        setupSearch();
-                    }
-                });
-            }
+            setTimeout(initializeApp, 1000);
             
             // Configurar el botón de toggle del panel
             document.getElementById('panelToggle').addEventListener('click', function() {
@@ -411,37 +563,60 @@
             });
             
             // Configurar el slider de monto
-            var amountSlider = document.getElementById('amountRangeFilter');
-            var amountDisplay = document.getElementById('amountValueDisplay');
+            const amountSlider = document.getElementById('amountRangeFilter');
+            const amountDisplay = document.getElementById('amountValueDisplay');
             
             amountSlider.addEventListener('input', function() {
-                if (this.value == 0) {
-                    amountDisplay.textContent = 'Todos los montos';
-                } else {
-                    amountDisplay.textContent = 'Mínimo: $' + parseInt(this.value).toLocaleString();
+                amountDisplay.textContent = this.value == 0 ? 
+                    'Todos los montos' : 
+                    `Mínimo: $${parseInt(this.value).toLocaleString()}`;
+            });
+        });
+        
+        function initializeApp() {
+            map = window.map;
+            
+            // Encontrar capas
+            const layers = map.getLayers().getArray();
+            layers.forEach(layer => {
+                const title = layer.get('title') || '';
+                if (title.includes('Ayudas')) {
+                    ayudaLayer = layer;
+                    const source = layer.getSource();
+                    source.once('change', () => {
+                        if (source.getState() === 'ready') {
+                            originalFeatures = source.getFeatures();
+                            setupFilters();
+                            setupLegend();
+                        }
+                    });
+                }
+                if (title.includes('Parcelario')) {
+                    parcelaLayer = layer;
                 }
             });
+            
+            // Configurar búsquedas
+            setupSearches();
         }
         
         function setupFilters() {
             document.getElementById('applyFilters').addEventListener('click', function() {
-                var typeFilter = document.getElementById('helpTypeFilter').value;
-                var amountFilter = parseInt(document.getElementById('amountRangeFilter').value);
+                const typeFilter = document.getElementById('helpTypeFilter').value;
+                const amountFilter = parseInt(document.getElementById('amountRangeFilter').value);
                 
-                var source = ayudaLayer.getSource();
+                const source = ayudaLayer.getSource();
                 source.clear();
                 
-                var filteredFeatures = originalFeatures.filter(function(feature) {
-                    var properties = feature.getProperties();
-                    var matchesType = true;
-                    var matchesAmount = true;
+                const filteredFeatures = originalFeatures.filter(feature => {
+                    const properties = feature.getProperties();
+                    let matchesType = true;
+                    let matchesAmount = true;
                     
-                    // Filtrar por tipo
                     if (typeFilter !== 'all' && properties.tipo !== typeFilter) {
                         matchesType = false;
                     }
                     
-                    // Filtrar por monto (asumiendo que hay una propiedad 'monto')
                     if (amountFilter > 0 && properties.monto && parseInt(properties.monto) < amountFilter) {
                         matchesAmount = false;
                     }
@@ -454,8 +629,7 @@
         }
         
         function setupLegend() {
-            // Colores basados en los estilos de QGIS (debes ajustarlos según tu configuración)
-            var helpTypes = [
+            const helpTypes = [
                 {name: 'Impuestos', color: '#1f78b4'},
                 {name: 'Gastos médicos', color: '#33a02c'},
                 {name: 'Sepelio', color: '#e31a1c'},
@@ -466,62 +640,116 @@
                 {name: 'Gastos varios', color: '#fb9a99'}
             ];
             
-            var legendHTML = '';
-            helpTypes.forEach(function(type) {
-                legendHTML += '<div class="legend-item" style="margin-bottom: 8px; display: flex; align-items: center;">';
-                legendHTML += '<span class="legend-color" style="display: inline-block; width: 16px; height: 16px; background-color: ' + type.color + '; margin-right: 8px; border-radius: 3px;"></span>';
-                legendHTML += '<span class="legend-label" style="font-size: 0.85rem;">' + type.name + '</span>';
-                legendHTML += '</div>';
+            let legendHTML = '';
+            helpTypes.forEach(type => {
+                legendHTML += `
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: ${type.color}"></span>
+                        <span class="legend-label">${type.name}</span>
+                    </div>
+                `;
             });
             
             document.getElementById('legend-container').innerHTML = legendHTML;
         }
         
-        function setupSearch() {
-            // Mejorar la función de búsqueda para centrar en el punto
-            if (typeof searchLayer !== 'undefined') {
-                // Sobrescribir el comportamiento por defecto para centrar y hacer zoom
-                var originalSearchFunction = searchLayer.search;
+        function setupSearches() {
+            // Configurar búsqueda de beneficiarios
+            const beneficiarySearch = document.getElementById('beneficiarySearch');
+            beneficiarySearch.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    searchBeneficiarios(this.value);
+                }
+            });
+            
+            // Configurar búsqueda de parcelas
+            const parcelSearch = document.getElementById('parcelSearch');
+            parcelSearch.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    searchParcelas(this.value);
+                }
+            });
+        }
+        
+        function searchBeneficiarios(query) {
+            if (!ayudaLayer || !query) return;
+            
+            const source = ayudaLayer.getSource();
+            const features = source.getFeatures();
+            const found = features.filter(feature => {
+                const props = feature.getProperties();
+                return Object.values(props).some(value => 
+                    value && value.toString().toLowerCase().includes(query.toLowerCase())
+                );
+            });
+            
+            if (found.length > 0) {
+                const firstFeature = found[0];
+                const geometry = firstFeature.getGeometry();
                 
-                searchLayer.search = function(query) {
-                    originalSearchFunction.call(this, query);
+                if (geometry) {
+                    map.getView().animate({
+                        center: geometry.getCoordinates(),
+                        zoom: 16,
+                        duration: 1000
+                    });
                     
-                    // Centrar en el primer resultado
-                    if (this.features.length > 0) {
-                        var feature = this.features[0];
-                        var geometry = feature.getGeometry();
-                        
-                        if (geometry) {
-                            var view = map.getView();
-                            view.animate({
-                                center: geometry.getCoordinates(),
-                                zoom: 16,
-                                duration: 1000
-                            });
-                            
-                            // Abrir popup con información
-                            var overlay = document.getElementById('popup');
-                            var content = document.getElementById('popup-content');
-                            
-                            // Construir contenido del popup
-                            var props = feature.getProperties();
-                            var popupHTML = '<h3>Detalles de Ayuda</h3><div class="popup-details">';
-                            
-                            for (var key in props) {
-                                if (props.hasOwnProperty(key) && key !== 'geometry') {
-                                    popupHTML += '<div class="popup-detail-item"><span class="label">' + key + ':</span> <span>' + props[key] + '</span></div>';
-                                }
-                            }
-                            
-                            popupHTML += '</div>';
-                            content.innerHTML = popupHTML;
-                            
-                            // Mostrar popup
-                            overlay.style.display = 'block';
-                        }
-                    }
-                };
+                    showPopup(firstFeature, 'Beneficiario');
+                }
             }
+        }
+        
+        function searchParcelas(query) {
+            if (!parcelaLayer || !query) return;
+            
+            const source = parcelaLayer.getSource();
+            const features = source.getFeatures();
+            const found = features.filter(feature => {
+                const props = feature.getProperties();
+                return Object.values(props).some(value => 
+                    value && value.toString().toLowerCase().includes(query.toLowerCase())
+                );
+            });
+            
+            if (found.length > 0) {
+                const firstFeature = found[0];
+                const geometry = firstFeature.getGeometry();
+                
+                if (geometry) {
+                    const extent = geometry.getExtent();
+                    map.getView().fit(extent, {
+                        padding: [100, 100, 100, 100],
+                        duration: 1000
+                    });
+                    
+                    showPopup(firstFeature, 'Parcela');
+                }
+            }
+        }
+        
+        function showPopup(feature, type) {
+            const overlay = document.getElementById('popup');
+            const title = document.getElementById('popup-title');
+            const content = document.getElementById('popup-details');
+            
+            title.textContent = `Detalles de ${type}`;
+            
+            const props = feature.getProperties();
+            let popupHTML = '';
+            
+            for (const key in props) {
+                if (props.hasOwnProperty(key) && key !== 'geometry') {
+                    popupHTML += `
+                        <div class="popup-detail-item">
+                            <span class="label">${key}:</span>
+                            <span class="value">${props[key]}</span>
+                        </div>
+                    `;
+                }
+            }
+            
+            content.innerHTML = popupHTML;
+            overlay.style.display = 'block';
         }
         </script>
     </body>
