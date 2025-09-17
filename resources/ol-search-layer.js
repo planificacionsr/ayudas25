@@ -30,9 +30,9 @@ class SearchLayer extends ol.control.Control {
       throw new Error('Missing layer in options');
     }
 	
-	options.maxResults = (optOptions && typeof optOptions.maxResults === 'number') 
-	  ? optOptions.maxResults 
-	  : 10;
+    options.maxResults = (optOptions && typeof optOptions.maxResults === 'number') 
+      ? optOptions.maxResults 
+      : 10;
 
     options.map = optOptions.map;
     options.colName = optOptions.colName;
@@ -45,9 +45,9 @@ class SearchLayer extends ol.control.Control {
     } else if (options.layer instanceof ol.layer.Vector) {
       source = options.layer.getSource();
     }
-	if (source instanceof ol.source.Cluster) {
-	  source = source.getSource();
-	}
+    if (source instanceof ol.source.Cluster) {
+      source = source.getSource();
+    }
 
     // Create button
     const button = document.createElement('button');
@@ -110,12 +110,7 @@ class SearchLayer extends ol.control.Control {
     const map = options.map;
     map.addInteraction(select);
 
-    // Setup horsey autocomplete
-    const typesToZoomToExtent = [
-      'MultiPoint', 'LineString', 'MultiLineString', 'MultiPolygon', 'Polygon'
-    ];
-    const typesToZoomToCenterAndZoom = ['Point'];
-
+    // Autocomplete con horsey
     const returnHorsey = (input, source, map, select, options) => {
       return horsey(input, {
         source: [{
@@ -131,19 +126,16 @@ class SearchLayer extends ol.control.Control {
         }],
         getText: 'text',
         getValue: 'value',
-		limit: options.maxResults,
+        limit: options.maxResults,
         predictNextSearch: function(info) {
           const feat = source.getFeatureById(info.selection.value);
-          const featType = feat.getGeometry().getType();
 
-          if (typesToZoomToCenterAndZoom.includes(featType)) {
-            const newCenter = ol.extent.getCenter(feat.getGeometry().getExtent());
-            map.getView().setCenter(newCenter);
-            map.getView().setZoom(options.zoom || 12);
-          } else if (typesToZoomToExtent.includes(featType)) {
-            map.getView().fit(feat.getGeometry().getExtent(), map.getSize());
-          }
+          // Ir siempre al centro del feature
+          const newCenter = ol.extent.getCenter(feat.getGeometry().getExtent());
+          map.getView().setCenter(newCenter);
+          map.getView().setZoom(options.zoom || 17); // Zoom definido
 
+          // Destacar el feature
           select.getFeatures().clear();
           select.getFeatures().push(feat);
         }
